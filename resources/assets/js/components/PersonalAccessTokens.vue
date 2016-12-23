@@ -174,7 +174,7 @@
                                 <label for="api_token_type_uber">Live</label>
                             </div>
                             <div class="radio-container last">
-                                <input type="radio" id="api_token_type_dev" value="dev" v-model="form.api_token_type" checked>
+                                <input type="radio" id="api_token_type_dev" value="dev" v-model="form.api_token_type">
                                 <label for="api_token_type_dev">Development</label>
                             </div>
 
