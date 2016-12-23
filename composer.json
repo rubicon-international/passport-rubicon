@@ -1,12 +1,16 @@
 {
-    "name": "laravel/passport",
-    "description": "Laravel Passport provides OAuth2 server support to Laravel.",
+    "name": "rubicon-international/passport-rubicon",
+    "description": "Laravel Passport provides OAuth2 server support to Laravel. This has been modified for custom use",
     "keywords": ["laravel", "passport", "oauth"],
     "license": "MIT",
     "authors": [
         {
             "name": "Taylor Otwell",
             "email": "taylor@laravel.com"
+        },
+        {
+            "name": "Jeremy Kenedy",
+            "email": "jeremykenedy@gmail.com"
         }
     ],
     "require": {
