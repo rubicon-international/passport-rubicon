@@ -6,6 +6,17 @@
     .m-b-none {
         margin-bottom: 0;
     }
+    .radio-container.last {
+        margin-bottom: 1em;
+    }
+    .label {
+        margin: 0 .5em .5em 0;
+    }
+    @media(min-width: 992px) {
+        .radio-container {
+            margin: 4px 0 0 14.2em;
+        }
+    }
 </style>
 
 <template>
@@ -31,30 +42,76 @@
                     </p>
 
                     <!-- Personal Access Tokens -->
-                    <table class="table table-borderless m-b-none" v-if="tokens.length > 0">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th></th>
-                            </tr>
-                        </thead>
+                    <div class="table-responsive">
+                        <table class="table table-borderless m-b-none table-striped table-hover table-condensed data-table" v-if="tokens.length > 0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Scopes</th>
+                                    <!--
+                                    <th>Token Type</th>
+                                    <th>API Client ID</th>
+                                    <th>API Application ID</th>
+                                    -->
+                                    <th>Created</th>
+                                    <th>Expires</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
 
-                        <tbody>
-                            <tr v-for="token in tokens">
-                                <!-- Client Name -->
-                                <td style="vertical-align: middle;">
-                                    {{ token.name }}
-                                </td>
+                            <tbody>
+                                <tr v-for="token in tokens">
+                                    <!-- Client Name -->
+                                    <td style="vertical-align: middle;">
+                                        {{ token.name }}
+                                    </td>
 
-                                <!-- Delete Button -->
-                                <td style="vertical-align: middle;">
-                                    <a class="action-link text-danger" @click="revoke(token)">
-                                        Delete
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                    <!-- Token Scopes -->
+                                    <td style="vertical-align: middle;">
+                                        <span class="label label-info" v-for="scope in token.scopes">
+                                            {{ scope }}
+                                        </span>
+                                    </td>
+
+                                    <!--
+                                    <td style="vertical-align: middle;">
+                                        Token Types
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        API Client ID
+                                    </td>
+
+                                    <td style="vertical-align: middle;">
+                                        API Application ID
+                                    </td>
+                                    -->
+
+                                    <!-- Token Creation Date -->
+                                    <td style="vertical-align: middle;">
+                                        {{ token.created_at }}
+                                    </td>
+
+                                    <!-- Token Expiration Date -->
+                                    <td style="vertical-align: middle;">
+                                        {{ token.expires_at }}
+                                    </td>
+
+                                    <!-- Delete Button -->
+                                    <td style="vertical-align: middle;">
+                                        <div v-if="token.revoked" class="text-small text-danger">
+                                            Revoked
+                                        </div>
+                                        <div v-else>
+                                            <a class="btn btn-warning btn-xs" @click="revoke(token)">
+                                                Revoke
+                                            </a>
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -74,7 +131,7 @@
                     <div class="modal-body">
                         <!-- Form Errors -->
                         <div class="alert alert-danger" v-if="form.errors.length > 0">
-                            <p><strong>Whoops!</strong> Something went wrong!</p>
+                            <p><strong>Ahhh Snaps!</strong> Something went wrong!</p>
                             <br>
                             <ul>
                                 <li v-for="error in form.errors">
@@ -87,26 +144,49 @@
                         <form class="form-horizontal" role="form" @submit.prevent="store">
                             <!-- Name -->
                             <div class="form-group">
-                                <label class="col-md-4 control-label">Name</label>
+                                <label class="col-md-4 control-label" for="create-token-name">Token Name</label>
 
                                 <div class="col-md-6">
-                                    <input id="create-token-name" type="text" class="form-control" name="name" v-model="form.name">
+                                    <input id="create-token-name" type="text" class="form-control" name="name" v-model="form.name" placeholder="Token Name">
                                 </div>
+                            </div>
+
+                            <!-- Application client ID -->
+                            <div class="form-group">
+                                <label class="col-md-4 control-label" for="api_client_id">Client ID</label>
+                                <div class="col-md-6">
+                                    <input v-model="form.api_client_id" id="api_client_id" class="form-control" placeholder="Client ID">
+                                </div>
+                            </div>
+
+                            <!-- Application ID -->
+                            <div class="form-group">
+                                <label class="col-md-4 control-label" for="api_application_id">Application ID</label>
+                                <div class="col-md-6">
+                                    <input v-model="form.api_application_id" id="api_application_id" class="form-control" placeholder="Application ID">
+                                </div>
+                            </div>
+
+                            <!-- Application Token Type -->
+                            <label class="col-md-4 control-label" for="api_token_type" style="padding-left: 0;">Token Type</label>
+                            <div class="radio-container">
+                                <input type="radio" id="api_token_type_uber" value="uber" v-model="form.api_token_type">
+                                <label for="api_token_type_uber">Live</label>
+                            </div>
+                            <div class="radio-container last">
+                                <input type="radio" id="api_token_type_dev" value="dev" v-model="form.api_token_type" checked>
+                                <label for="api_token_type_dev">Development</label>
                             </div>
 
                             <!-- Scopes -->
                             <div class="form-group" v-if="scopes.length > 0">
-                                <label class="col-md-4 control-label">Scopes</label>
-
+                                <label class="col-md-4 control-label">Scopes / Access</label>
                                 <div class="col-md-6">
                                     <div v-for="scope in scopes">
                                         <div class="checkbox">
                                             <label>
-                                                <input type="checkbox"
-                                                    @click="toggleScope(scope.id)"
-                                                    :checked="scopeIsAssigned(scope.id)">
-
-                                                    {{ scope.id }}
+                                                <input type="checkbox" @click="toggleScope(scope.id)" :checked="scopeIsAssigned(scope.id)">
+                                                {{ scope.id }}
                                             </label>
                                         </div>
                                     </div>
@@ -152,6 +232,8 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     </div>
+
+
                 </div>
             </div>
         </div>
@@ -166,13 +248,14 @@
         data() {
             return {
                 accessToken: null,
-
                 tokens: [],
                 scopes: [],
-
                 form: {
                     name: '',
                     scopes: [],
+                    api_client_id: '',
+                    api_application_id: '',
+                    api_token_type: '',
                     errors: []
                 }
             };
@@ -242,12 +325,13 @@
 
                 this.$http.post('/oauth/personal-access-tokens', this.form)
                         .then(response => {
-                            this.form.name = '';
+                            this.form.name;
+                            this.form.api_client_id;
+                            this.form.api_application_id = '';
+                            this.form.api_token_type = '';
                             this.form.scopes = [];
                             this.form.errors = [];
-
                             this.tokens.push(response.data.token);
-
                             this.showAccessToken(response.data.accessToken);
                         })
                         .catch(response => {
@@ -257,6 +341,7 @@
                                 this.form.errors = ['Something went wrong. Please try again.'];
                             }
                         });
+
             },
 
             /**
@@ -297,6 +382,9 @@
                             this.getTokens();
                         });
             }
+
         }
+
     }
+
 </script>
